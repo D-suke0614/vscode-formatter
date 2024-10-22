@@ -1,5 +1,10 @@
 # vscode-formatter README
 
+## Overview
+
+prettierをwrapしたvscodeの拡張機能
+拡張機能をいれるだけで、パッケージ等のインストール無しで利用可能
+
 ## how to use dev mode
 
 1. `F5`もしくは実行とデバッグから`Run Extension`でデバッグモードで実行する
