@@ -1,26 +1,45 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import * as prettier from 'prettier';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+  const disposable = vscode.commands.registerCommand('extension.formatWithPrettier', async () => {
+    const editor = vscode.window.activeTextEditor;
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "vscode-formatter" is now active!');
+    if (editor) {
+      const document = editor.document;
+      const selection = editor.selection;
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('vscode-formatter.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from vscode-formatter!');
-	});
+      // 選択されたテキスト、または全体を取得
+      const text = selection.isEmpty ? document.getText() : document.getText(selection);
 
-	context.subscriptions.push(disposable);
+      // Prettierの設定を取得してフォーマット
+      const formatted = await prettier.format(text, {
+        semi: true, // セミコロンを必ず追加
+        parser: 'babel', // JavaScript用パーサ
+      });
+
+      // エディタにフォーマットされたテキストを書き戻す
+      editor.edit(editBuilder => {
+        if (selection.isEmpty) {
+          const fullRange = new vscode.Range(
+            document.positionAt(0),
+            document.positionAt(document.getText().length)
+          );
+          editBuilder.replace(fullRange, formatted);
+        } else {
+          editBuilder.replace(selection, formatted);
+        }
+      });
+
+      vscode.window.showInformationMessage('Code formatted with Prettier!');
+    }
+  });
+
+  context.subscriptions.push(disposable);
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}
